@@ -21,7 +21,12 @@ POETS = sorted({p["poet"] for p in POEMS})
 WITH_TEXT = [i for i, p in enumerate(POEMS) if p["text"]]
 
 # يحفظ روم قصيدة اليوم لكل سيرفر. على Railway اجعل DATA_DIR يشير لمسار الـ Volume (مثل /data)
-CONFIG_FILE = os.path.join(os.environ.get("DATA_DIR", "."), "daily.json")
+DATA_DIR = os.environ.get("DATA_DIR", ".")
+try:
+    os.makedirs(DATA_DIR, exist_ok=True)
+except OSError:
+    DATA_DIR = "."
+CONFIG_FILE = os.path.join(DATA_DIR, "daily.json")
 
 # وقت النشر: 9 صباحًا بتوقيت +3 (السعودية/الكويت/قطر). للإمارات غيّر hours=4
 DAILY_TIME = datetime.time(hour=9, minute=0, tzinfo=datetime.timezone(datetime.timedelta(hours=3)))
@@ -134,7 +139,7 @@ async def poem_autocomplete(interaction: discord.Interaction, current: str):
 
 @tree.command(name="random", description="قصيدة عشوائية")
 async def random_poem(interaction: discord.Interaction):
-    await interaction.response.send_message(embed=poem_embed(random.randrange(len(POEMS))))
+    await interaction.response.send_message(embed=poem_embed(random.choice(WITH_TEXT)))
 
 
 @tree.command(name="search", description="بحث في الديوان بكلمة")
